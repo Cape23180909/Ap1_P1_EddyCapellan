@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Aplicada.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Aplicada.DAL
 {
@@ -7,6 +8,6 @@ namespace Aplicada.DAL
         public Contexto(DbContextOptions<Contexto> options)
             : base(options) { }
 
-        //public DbSet <>
+        public DbSet <Articulos> articulos { get; set; }
     }
 }
