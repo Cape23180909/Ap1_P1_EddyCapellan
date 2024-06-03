@@ -1,0 +1,118 @@
+﻿@page "/Articulos/Index"
+@inject ArticuloService articuloservice
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<EditForm Model=" ListaArticulos" class="border shadow-lg p-3 rounded">
+
+    <div class="card-header bg-primary text-white text-center py-2 rounded">
+        <h3 style="font-weight: bold;" class="mb-0 font-weight-bold">Consulta de articulos</h3>
+    </div>
+
+    <div class="row mb-3 align-items-end">
+        <div class="col-md-3">
+            <label for="Filtro" class="form-label">Filtrar por:</label>
+            <select @bind="filtro" class="form-select">
+                <option value="ArticuloId">ArticuloId</option>
+                <option value="Descripcion">Descripcion</option>
+                <option value="Costo">Costo</option>
+                <option value="Ganancia">Ganancia </option>
+                <option value="Precio">Precio </option>
+            </select>
+        </div>
+
+        <div class="col-md-6">
+            <label for="ValorFiltro" class="form-label">Búsqueda:</label>
+            <div class="input-group">
+                <input @bind="valorFiltro" class="form-control" placeholder="Buscar" />
+                <button @onclick="Buscar" class="btn btn-outline-primary" type="button">
+                    <span class="bi bi-search"></span> Buscar
+                </button>
+            </div>
+        </div>
+
+        <div class="col-md-3 text-end">
+            <a href="/Articulos/Create" class="btn btn-outline-primary" <Icon Name="IconName.Plus" /> Nuevo</a
+        </div>
+    </div>
+
+    <table class="table table-bordered text-center">
+        <thead class="bg-primary text-white">
+            <tr>
+                <th>ArticuloId</th>
+                <th>Descripcion</th>
+                <th>Costo</th>
+                <th>Ganancia</th>
+                <th>Precio</th>
+                <th>Ver</th>
+                <th>Editar</th>
+                <th>Eliminar</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var articulo in ListaArticulos)
+            {
+                <tr>
+                    <td>@articulo.ArticuloId</td>
+                    <td>@articulo.Descripcion</td>
+                    <td>@articulo.Costo</td>
+                    <td>@articulo.Ganancia</td>
+                    <td>@articulo.Precio</td>
+
+                    <td>
+                        <a class="btn btn-outline-primary" href="@articulo.ArticuloId">
+                            <Icon Name="IconName.Eye" /> Ver
+                        </a>
+                    </td>
+
+                    <td>
+                        <a class="btn btn-outline-primary" href="@articulo.ArticuloId">
+                            <Icon Name="IconName.Pencil" /> Modificar
+                        </a>
+                    </td>
+
+                    <td>
+                        <a class="btn btn-outline-primary" href="@articulo.ArticuloId">
+                            <Icon Name="IconName.Trash" /> Eliminar
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</EditForm>
+
+@code {
+    public Articulos metas = new Articulos();
+    public List<Articulos> ListaArticulos = new List<Articulos>();
+    public string filtro = "ID";
+    public string valorFiltro = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaArticulos = await articuloservice.Listar(A => true);
+    }
+
+    private async Task Buscar()
+    {
+        if (string.IsNullOrWhiteSpace(valorFiltro))
+        {
+            ListaArticulos = await articuloservice.Listar(p => true);
+        }
+        else
+        {
+            if (filtro == "Id" && int.TryParse(valorFiltro, out int MetaId))
+            {
+                ListaArticulos = await articuloservice.Listar(a => a.ArticuloId == MetaId);
+            }
+            else if (filtro == "Descripcion")
+            {
+                ListaArticulos = await articuloservice.Listar(a => a.Descripcion.Contains(valorFiltro));
+            }
+            else if (filtro == "Costo" && decimal.TryParse(valorFiltro, out decimal Monto))
+            {
+                ListaArticulos = await articuloservice.Listar(a => a.Costo == Monto);
+            }
+        }
+    }
+}

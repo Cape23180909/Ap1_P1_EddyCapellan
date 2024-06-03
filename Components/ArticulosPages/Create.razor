@@ -1,0 +1,134 @@
+﻿@page "/Articulos/Create"
+@inject ArticuloService articuloervice
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<EditForm Model="articulos" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <Toasts class="p-3" Messages="MensajeToast" Placement="ToastsPlacement.TopRight" />
+
+    <div class="card shadow-lg border-0 rounded" style="background-color: #f8f9fa;">
+        <div class="card-header bg-primary text-white" style="text-align: center;">
+            <h3> <i class="fas fa-clipboard-list"></i> Registro de metas</h3>
+        </div>
+        <div class="card-body">
+
+            @* ArticuloId *@
+            <div class="mb-3">
+                <label for="ArticuloId" class="form-label">ArticuloId:</label>
+                <InputNumber @bind-Value="articulos.ArticuloId" class="form-control" aria-describedby="BotonBuscar" />
+            </div>
+
+            @* Descripcion *@
+            <div class="mb-3">
+                <label for="Descripcion" class="form-label">Descripci&oacute;n:</label>
+                <InputText @bind-Value="articulos.Descripcion" class="form-control" />
+                <ValidationMessage For="@(() => articulos.Descripcion)" />
+            </div>
+            @* Costo *@
+            <div class="mb-3">
+                <label for="Costo" class="form-label">Costo:</label>
+                <InputNumber @bind-Value="articulos.Costo" class="form-control" />
+                <ValidationMessage For="@(() => articulos.Costo)" />
+            </div>
+            @* Ganancia *@
+            <div class="mb-3">
+                <label for="Ganancia" class="form-label">Ganancia:</label>
+                <InputNumber @bind-Value="articulos.Ganancia" class="form-control" />
+                <ValidationMessage For="@(() => articulos.Ganancia)" />
+            </div>
+
+            @* Precio *@
+            <div class="mb-3">
+                <label for="Precio" class="form-label">Precio:</label>
+                <InputNumber @bind-Value="articulos.Precio" class="form-control" />
+                <ValidationMessage For="@(() => articulos.Precio)" />
+            </div>
+        </div>
+
+        <div class="card-footer bg-light d-flex justify-content-center mt-3">
+            <div class="btn-group">
+                <button class="btn btn-outline-primary" @onclick="Nuevo"> <Icon Name="IconName.Plus" /> Nuevo</button>
+                <button class="btn btn-outline-success" type="submit"><Icon Name="IconName.Floppy" /> Guardar</button>
+                <a href="/Meta/Index" class="btn btn-outline-secondary">
+                    <Icon Name="IconName.Arrow90DegLeft" /> Volver
+                </a>
+
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int MetaId { get; set; }
+    List<ToastMessage> MensajeToast = new List<ToastMessage>();
+    private bool mostrarMensajeError = false;
+    public Articulos articulos { get; set; } = new Articulos();
+    public string mensaje;
+    private bool Existe = false;
+
+    public void Nuevo()
+    {
+        articulos = new Articulos();
+        Existe = false;
+    }
+
+    public async Task Buscar()
+    {
+        Existe = false;
+        var articuloEncontrado = await articuloervice.Buscar(articulos.ArticuloId);
+
+        if (articuloEncontrado != null)
+        {
+            articulos = articuloEncontrado;
+        }
+        else
+        {
+            Nuevo();
+        }
+    }
+
+    public async Task<bool> Validar()
+    {
+        Existe = await articuloervice.Existe(articulos.ArticuloId);
+        return !Existe;
+    }
+
+    public async Task Guardar()
+    {
+        if (!await Validar())
+        {
+            return;
+        }
+
+        var guardo = await articuloervice.Guardar(articulos);
+        if (guardo)
+        {
+            await Mensaje(ToastType.Success, "La meta se ha guardado con éxito");
+            Nuevo();
+        }
+    }
+
+    public async Task Eliminar()
+    {
+        var eliminado = await articuloervice.Eliminar(articulos.ArticuloId);
+        Nuevo();
+    }
+
+    private ToastMessage CreateToastMessage(ToastType toastType, string mensaje)
+      => new ToastMessage
+          {
+              Type = toastType,
+              Title = "Notificación",
+              HelpText = $"{DateTime.Now}",
+              Message = mensaje,
+          };
+
+    private async Task Mensaje(ToastType toastType, string mensaje)
+    {
+        MensajeToast.Add(CreateToastMessage(toastType, mensaje));
+    }
+
+}
