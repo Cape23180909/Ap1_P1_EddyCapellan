@@ -1,0 +1,58 @@
+﻿@page "/Articulos/Details"
+@page "/Articulos/Details/{IncentivoId:int}"
+@inject ArticuloService articuloservice
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Detalles</PageTitle>
+
+@if (articulos != null)
+{
+    <div class="container">
+        <div class="card shadow-header">
+            <div class="card-header bg-primary text-white text-center py-2 rounded">
+                <h3 class="text-center"><strong>Detalles</strong></h3>
+            </div>
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card-body">
+                            <ul class="list-unstyled">
+                                <li><strong>ArticuloId:</strong> @articulos.ArticuloId</li>
+                                <li><strong>Descripci&oacute;n:</strong> @articulos.Descripcion</li>
+                                <li><strong>Costo:</strong> @articulos.Costo</li>
+                                <li><strong>Ganancia:</strong> @articulos.Ganancia</li>
+                                <li><strong>Precio:</strong> @articulos.Precio</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <a href="/Articulos/Index" class="btn btn-outline-secondary">
+                <Icon Name="IconName.Arrow90DegLeft" /> Volver
+            </a>
+        </div>
+    </div>
+}
+else
+{
+    <p>Incentivo del articulo no encontrado.</p>
+}
+
+@code {
+    [Parameter]
+    public int IncentivoId { get; set; }
+    private Articulos articulos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        articulos = await articuloservice.Buscar(IncentivoId);
+    }
+
+    private async Task Volver()
+    {
+        navigationManager.NavigateTo("/Meta/Index");
+    }
+}
