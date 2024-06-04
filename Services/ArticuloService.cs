@@ -19,18 +19,18 @@ namespace Aplicada.Services
         //Metodo Existe 
         public async Task <bool> Existe (int ArticuloId)
         {
-            return await Contexto.articulos.AnyAsync (a =>a.ArticuloId == ArticuloId);
+            return await Contexto.Articulos.AnyAsync (a =>a.ArticuloId == ArticuloId);
         }
         //Metodo Insertar
         private async Task <bool> Insertar (Articulos articulos)
         {
-            Contexto.articulos.Add (articulos);
+            Contexto.Articulos.Add (articulos);
             return await Contexto.SaveChangesAsync () > 0;
         }
         //Metodo modificar
         private async Task <bool> Modificar (Articulos articulos)
         {
-            Contexto.articulos.Update(articulos);
+            Contexto.Articulos.Update(articulos);
             var Modificado = await Contexto.SaveChangesAsync () > 0;
             Contexto.Entry(articulos).State = EntityState.Detached;
             return Modificado;
@@ -47,7 +47,7 @@ namespace Aplicada.Services
         //Metodo eliminar 
         public async Task <bool> Eliminar (int id)
         {
-            var EliminarArticulo = await Contexto.articulos
+            var EliminarArticulo = await Contexto.Articulos
                 .Where(a =>a.ArticuloId==id)
                 .ExecuteDeleteAsync();
             return EliminarArticulo > 0;
@@ -55,14 +55,14 @@ namespace Aplicada.Services
         // Metodo buscar 
         public async Task <Articulos?> Buscar (int id)
         {
-            return await Contexto.articulos
+            return await Contexto.Articulos
                 .AsNoTracking()
                 .FirstOrDefaultAsync ();
         }
         //Metodo Listar 
         public async Task<List<Articulos>> Listar(Expression<Func<Articulos, bool>> criterio)
         {
-            return await Contexto.articulos
+            return await Contexto.Articulos
                 .Where(criterio)
                 .ToListAsync();
         }

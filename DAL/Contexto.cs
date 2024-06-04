@@ -8,6 +8,6 @@ namespace Aplicada.DAL
         public Contexto(DbContextOptions<Contexto> options)
             : base(options) { }
 
-        public DbSet <Articulos> articulos { get; set; }
+        public DbSet <Articulos> Articulos { get; set; }
     }
 }
