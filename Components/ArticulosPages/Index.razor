@@ -111,7 +111,7 @@
             }
             else if (filtro == "Costo" && decimal.TryParse(valorFiltro, out decimal Monto))
             {
-                ListaArticulos = await articuloservice.Listar(a => a.Costo == Monto);
+                //ListaArticulos = await articuloservice.Listar(a => a.Costo == Monto);
             }
         }
     }
