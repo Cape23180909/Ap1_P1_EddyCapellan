@@ -22,13 +22,13 @@ namespace Aplicada.Services
             return await Contexto.Articulos.AnyAsync (a =>a.ArticuloId == ArticuloId);
         }
         //Metodo Insertar
-        private async Task <bool> Insertar (Articulos articulos)
+        public async Task <bool> Insertar (Articulos articulos)
         {
             Contexto.Articulos.Add (articulos);
             return await Contexto.SaveChangesAsync () > 0;
         }
         //Metodo modificar
-        private async Task <bool> Modificar (Articulos articulos)
+        public async Task <bool> Modificar (Articulos articulos)
         {
             Contexto.Articulos.Update(articulos);
             var Modificado = await Contexto.SaveChangesAsync () > 0;

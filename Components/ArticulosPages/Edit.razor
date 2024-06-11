@@ -1,5 +1,5 @@
-﻿@page "/Articulos/Edit/{ArticuloId:int}"
-@page "/Articulos/Edit"
+﻿@page "/Articulos/Edit"
+@page "/Articulos/Edit/{ArticuloId:int}"
 @inject ArticuloService articuloService
 @inject NavigationManager navigationManager
 @rendermode InteractiveServer
@@ -11,7 +11,7 @@
 
     <div class="card shadow-lg border-0 rounded" style="background-color: #f8f9fa;">
         <div class="card-header bg-primary text-white" style="text-align: center;">
-            <h3> <i class="fas fa-clipboard-list"></i> Modificar de artículos</h3>
+            <h3> <i class="fas fa-clipboard-list"></i> Modificar artículos</h3>
         </div>
         <div class="card-body">
 
@@ -60,12 +60,20 @@
 
 @code {
     [Parameter]
-    public int MetaId { get; set; }
+    public int ArticuloId { get; set; }
     List<ToastMessage> MensajeToast = new List<ToastMessage>();
     private bool mostrarMensajeError = false;
     public Articulos articulos { get; set; } = new Articulos();
     public string mensaje;
     private bool Existe = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (ArticuloId != 0)
+        {
+            articulos = await articuloService.Buscar(ArticuloId);
+        }
+    }
 
     public async Task Nuevo()
     {
@@ -84,9 +92,13 @@
         if (guardo)
         {
             await Mensaje(ToastType.Success, "El artículo se ha guardado con éxito");
-            Nuevo();
+        }
+        else
+        {
+            // await Mensaje(ToastType.Error, "Hubo un error al guardar el artículo");
         }
     }
+
 
     public async Task<bool> Validar()
     {
