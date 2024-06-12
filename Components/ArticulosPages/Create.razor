@@ -133,4 +133,15 @@
         MensajeToast.Add(CreateToastMessage(toastType, mensaje));
     }
 
+    private void CalcularPrecio(ChangeEventArgs e = null)
+    {
+        if (articulos.Costo > 0 && articulos.Ganancia > 0)
+        {
+            articulos.Precio = (articulos.Costo * articulos.Ganancia / 100) + articulos.Costo;
+        }
+        else
+        {
+            articulos.Precio = 0;
+        }
+        }
 }

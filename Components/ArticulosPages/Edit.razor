@@ -30,14 +30,14 @@
             <!-- Costo -->
             <div class="mb-3">
                 <label for="Costo" class="form-label">Costo:</label>
-                <InputNumber @bind-Value="articulo.Costo" class="form-control" />
+                <InputNumber @bind-Value="articulo.Costo" class="form-control" @oninput="CalcularPrecio" />
                 <ValidationMessage For="@(() => articulo.Costo)" />
             </div>
 
             <!-- Ganancia -->
             <div class="mb-3">
                 <label for="Ganancia" class="form-label">Ganancia:</label>
-                <InputNumber @bind-Value="articulo.Ganancia" class="form-control" />
+                <InputNumber @bind-Value="articulo.Ganancia" class="form-control" @oninput="CalcularPrecio" />
                 <ValidationMessage For="@(() => articulo.Ganancia)" />
             </div>
 
@@ -83,11 +83,11 @@
     public async Task Buscar()
     {
         Existe = false;
-        var ArticuloEncontrado = await articuloService.Buscar(ArticuloId);
+        var articuloEncontrado = await articuloService.Buscar(ArticuloId);
 
-        if (ArticuloEncontrado != null)
+        if (articuloEncontrado != null)
         {
-            articulo = ArticuloEncontrado;
+            articulo = articuloEncontrado;
             Existe = true;
         }
         else
@@ -99,6 +99,7 @@
 
     public async Task Guardar()
     {
+        CalcularPrecio();
         if (Existe)
         {
             var actualizado = await articuloService.Modificar(articulo);
@@ -114,6 +115,11 @@
         }
         else
         {
+            if (!await Validar())
+            {
+                return;
+            }
+
             var guardado = await articuloService.Guardar(articulo);
             if (guardado)
             {
@@ -145,7 +151,7 @@
     {
         var listaArticulos = await articuloService.Listar(a => a.Descripcion.ToLower() == articulo.Descripcion.ToLower() && a.ArticuloId != articulo.ArticuloId);
         Existe = listaArticulos.Any();
-        return Existe;
+        return !Existe;
     }
 
     private ToastMessage CreateToastMessage(ToastType toastType, string mensaje)
@@ -161,5 +167,17 @@
     {
         MensajeToast.Add(CreateToastMessage(toastType, mensaje));
         await InvokeAsync(StateHasChanged);
+    }
+
+    private void CalcularPrecio()
+    {
+        if (articulo.Costo > 0 && articulo.Ganancia > 0)
+        {
+            articulo.Precio = (articulo.Costo * articulo.Ganancia / 100) + articulo.Costo;
+        }
+        else
+        {
+            articulo.Precio = 0;
+        }
     }
 }
