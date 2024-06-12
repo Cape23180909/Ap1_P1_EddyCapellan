@@ -98,6 +98,8 @@
 
     public async Task Guardar()
     {
+        //Formula para calcular 
+        articulos.Precio =  (articulos.Costo * articulos.Ganancia / 100) + articulos.Costo;
         if (!await Validar())
         {
             return;
