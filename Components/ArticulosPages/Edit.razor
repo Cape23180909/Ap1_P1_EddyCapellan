@@ -1,10 +1,9 @@
-﻿@page "/Articulos/Edit"
-@page "/Articulos/Edit/{ArticuloId:int}"
+﻿@page "/Articulos/Edit/{ArticuloId:int}"
 @inject ArticuloService articuloService
 @inject NavigationManager navigationManager
 @rendermode InteractiveServer
 
-<EditForm Model="articulos" OnValidSubmit="Guardar">
+<EditForm Model="articulo" OnValidSubmit="Guardar">
     <DataAnnotationsValidator />
 
     <Toasts class="p-3" Messages="MensajeToast" Placement="ToastsPlacement.TopRight" />
@@ -18,33 +17,35 @@
             <!-- ArticuloId -->
             <div class="mb-3">
                 <label for="ArticuloId" class="form-label">ArticuloId:</label>
-                <InputNumber @bind-Value="articulos.ArticuloId" class="form-control" aria-describedby="BotonBuscar" />
+                <InputNumber @bind-Value="articulo.ArticuloId" class="form-control" aria-describedby="BotonBuscar" />
             </div>
 
             <!-- Descripcion -->
             <div class="mb-3">
                 <label for="Descripcion" class="form-label">Descripción:</label>
-                <InputText @bind-Value="articulos.Descripcion" class="form-control" />
-                <ValidationMessage For="@(() => articulos.Descripcion)" />
+                <InputText @bind-Value="articulo.Descripcion" class="form-control" />
+                <ValidationMessage For="@(() => articulo.Descripcion)" />
             </div>
+
             <!-- Costo -->
             <div class="mb-3">
                 <label for="Costo" class="form-label">Costo:</label>
-                <InputNumber @bind-Value="articulos.Costo" class="form-control" />
-                <ValidationMessage For="@(() => articulos.Costo)" />
+                <InputNumber @bind-Value="articulo.Costo" class="form-control" />
+                <ValidationMessage For="@(() => articulo.Costo)" />
             </div>
+
             <!-- Ganancia -->
             <div class="mb-3">
                 <label for="Ganancia" class="form-label">Ganancia:</label>
-                <InputNumber @bind-Value="articulos.Ganancia" class="form-control" />
-                <ValidationMessage For="@(() => articulos.Ganancia)" />
+                <InputNumber @bind-Value="articulo.Ganancia" class="form-control" />
+                <ValidationMessage For="@(() => articulo.Ganancia)" />
             </div>
 
             <!-- Precio -->
             <div class="mb-3">
                 <label for="Precio" class="form-label">Precio:</label>
-                <InputNumber @bind-Value="articulos.Precio" class="form-control" />
-                <ValidationMessage For="@(() => articulos.Precio)" />
+                <InputNumber @bind-Value="articulo.Precio" class="form-control" />
+                <ValidationMessage For="@(() => articulo.Precio)" />
             </div>
         </div>
 
@@ -62,61 +63,103 @@
     [Parameter]
     public int ArticuloId { get; set; }
     List<ToastMessage> MensajeToast = new List<ToastMessage>();
-    private bool mostrarMensajeError = false;
-    public Articulos articulos { get; set; } = new Articulos();
-    public string mensaje;
+    public Articulos articulo { get; set; } = new Articulos();
     private bool Existe = false;
 
     protected override async Task OnInitializedAsync()
     {
         if (ArticuloId != 0)
         {
-            articulos = await articuloService.Buscar(ArticuloId);
+            await Buscar();
         }
     }
 
-    public async Task Nuevo()
+    public void Nuevo()
     {
-        articulos = new Articulos();
+        articulo = new Articulos();
         Existe = false;
+    }
+
+    public async Task Buscar()
+    {
+        Existe = false;
+        var ArticuloEncontrado = await articuloService.Buscar(ArticuloId);
+
+        if (ArticuloEncontrado != null)
+        {
+            articulo = ArticuloEncontrado;
+            Existe = true;
+        }
+        else
+        {
+            await Mensaje(ToastType.Warning, "No se encontró el artículo con el ID especificado.");
+            Nuevo();
+        }
     }
 
     public async Task Guardar()
     {
-        if (!await Validar())
+        if (Existe)
         {
-            return;
-        }
-
-        var guardo = await articuloService.Guardar(articulos);
-        if (guardo)
-        {
-            await Mensaje(ToastType.Success, "El artículo se ha guardado con éxito");
+            var actualizado = await articuloService.Modificar(articulo);
+            if (actualizado)
+            {
+                await Mensaje(ToastType.Success, "El artículo se ha modificado con éxito. Puedes dar click en el botón retroceder.");
+                Nuevo();
+            }
+            else
+            {
+                await Mensaje(ToastType.Danger, "Ocurrió un error al actualizar el artículo.");
+            }
         }
         else
         {
-            // await Mensaje(ToastType.Error, "Hubo un error al guardar el artículo");
+            var guardado = await articuloService.Guardar(articulo);
+            if (guardado)
+            {
+                await Mensaje(ToastType.Success, "El artículo se ha guardado con éxito.");
+                Nuevo();
+            }
+            else
+            {
+                await Mensaje(ToastType.Danger, "Ocurrió un error al guardar el artículo.");
+            }
         }
     }
 
+    public async Task Eliminar()
+    {
+        var eliminado = await articuloService.Eliminar(articulo.ArticuloId);
+        if (eliminado)
+        {
+            await Mensaje(ToastType.Success, "El artículo se ha eliminado correctamente.");
+            Nuevo();
+        }
+        else
+        {
+            await Mensaje(ToastType.Danger, "Ocurrió un error al eliminar el artículo.");
+        }
+    }
 
     public async Task<bool> Validar()
     {
-        Existe = await articuloService.Existe(articulos.ArticuloId);
-        return !Existe;
+        var listaArticulos = await articuloService.Listar(a => a.Descripcion.ToLower() == articulo.Descripcion.ToLower() && a.ArticuloId != articulo.ArticuloId);
+        Existe = listaArticulos.Any();
+        return Existe;
     }
 
     private ToastMessage CreateToastMessage(ToastType toastType, string mensaje)
-    => new ToastMessage
-        {
-            Type = toastType,
-            Title = "Notificación",
-            HelpText = $"{DateTime.Now}",
-            Message = mensaje,
-        };
+        => new ToastMessage
+            {
+                Type = toastType,
+                Title = "Notificación",
+                HelpText = $"{DateTime.Now}",
+                Message = mensaje,
+            };
 
     private async Task Mensaje(ToastType toastType, string mensaje)
     {
         MensajeToast.Add(CreateToastMessage(toastType, mensaje));
+        await InvokeAsync(StateHasChanged);
     }
 }

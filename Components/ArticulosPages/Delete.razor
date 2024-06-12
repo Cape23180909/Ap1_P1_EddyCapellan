@@ -1,0 +1,105 @@
+﻿@page "/Articulos/Delete"
+@page "/Articulos/Delete/{ArticuloId:int}"
+@inject ArticuloService articuloservice
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Eliminar</PageTitle>
+
+<div class="container">
+    <div class="card shadow-header">
+        <div class="card-header bg-primary text-white text-center py-2 rounded">
+            <h3><strong>Eliminar</strong></h3>
+
+            <Toasts class="p-3" Messages="MensajeToast" Placement="ToastsPlacement.TopRight" />
+        </div>
+        <div class="card-header">
+            <h3 class="text-danger">¿Quieres eliminar?</h3>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card-body">
+                        <div class="border-primary border-2 borde">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <ul class="list-unstyled">
+                                            <li><strong>MetaId:</strong> @meta?.ArticuloId</li>
+                                            <li><strong>Descripción:</strong> @meta?.Descripcion</li>
+                                            <li><strong>Descripción:</strong> @meta?.Costo</li>
+                                            <li><strong>Descripción:</strong> @meta?.Ganancia</li>
+                                            <li><strong>Monto:</strong> @meta?.Precio</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-outline-primary" @onclick="EliminarMeta">
+                            <i class="bi bi-trash"></i> Eliminar
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" @onclick="Volver">
+                            <i class="bi bi-box-arrow-left"></i> Volver
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (meta == null)
+{
+    <p>Meta no encontrada.</p>
+}
+
+@code {
+    [Parameter]
+    public int ArticuloId { get; set; }
+    List<ToastMessage> MensajeToast = new List<ToastMessage>();
+    public Articulos? meta { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (ArticuloId != 0)
+        {
+            meta = await articuloservice.Buscar(ArticuloId);
+        }
+    }
+
+    public async Task EliminarMeta()
+    {
+        if (ArticuloId == 0 || meta == null)
+        {
+            return;
+        }
+
+        if (await articuloservice.Eliminar(ArticuloId))
+        {
+            await Mensaje(ToastType.Success, "La meta se ha eliminado correctamente");
+
+        }
+
+    }
+
+    public void Volver()
+    {
+        navigationManager.NavigateTo("/Articulos/Index");
+    }
+
+    private ToastMessage CreateToastMessage(ToastType toastType, string mensaje)
+
+        => new ToastMessage
+            {
+                Type = toastType,
+                Title = "Notificación",
+                Message = mensaje,
+            };
+
+    private async Task Mensaje(ToastType toastType, string mensaje)
+    {
+        MensajeToast.Add(CreateToastMessage(toastType, mensaje));
+        await InvokeAsync(StateHasChanged);
+    }
+}
